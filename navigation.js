@@ -4,5 +4,7 @@
   const update=()=>button?.setAttribute('aria-label',document.documentElement.dataset.theme==='dark'?'Switch to light mode':'Switch to dark mode');
   button?.addEventListener('click',()=>{const theme=document.documentElement.dataset.theme==='dark'?'light':'dark';document.documentElement.dataset.theme=theme;try{localStorage.setItem('thermal-theme',theme);}catch{}update();});update();
   const updateLinks=()=>document.querySelectorAll('[data-scenario-link]').forEach(a=>{a.href=a.getAttribute('href').split('#')[0]+location.hash;});
+  const page=location.pathname.split('/').pop()||'index.html';
+  document.querySelectorAll('[data-scenario-link]').forEach(link=>{if(link.getAttribute('href').split('#')[0]===page)link.setAttribute('aria-current','page');});
   updateLinks();window.addEventListener('hashchange',updateLinks);
 })();

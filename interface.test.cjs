@@ -15,3 +15,18 @@ test('out of range temperatures suppress verdict; preset boiling point cannot be
 test('malformed scenario falls back safely and theme toggle changes appearance',()=>{const{dom,w,get}=setup('index.html','#not-json');assert.ok(get('error').hidden);assert.match(get('action-status').textContent,/Could not read/);get('theme').click();assert.equal(w.document.documentElement.dataset.theme,'dark');get('theme').click();assert.equal(w.document.documentElement.dataset.theme,'light');dom.window.close();});
 test('CSV produces a download and reset restores the illustrative example',()=>{const{dom,w,get,set}=setup();set('power',7);get('csv').click();assert.equal(w.downloaded,'thermal-efficiency.csv');get('reset').click();assert.equal(get('power').value,'2');assert.ok(get('error').hidden);dom.window.close();});
 test('source filter is functional and reports empty results',()=>{const dom=new JSDOM(fs.readFileSync('sources.html','utf8'),{runScripts:'outside-only'});for(const file of['data.js','sources.js'])dom.window.eval(fs.readFileSync(file,'utf8'));const d=dom.window.document;assert.equal(d.querySelectorAll('#sources-body tr').length,17);d.getElementById('source-search').value='acetonitrile';d.getElementById('source-search').dispatchEvent(new dom.window.Event('input'));assert.equal(d.querySelectorAll('#sources-body tr').length,1);d.getElementById('source-search').value='not-a-solvent';d.getElementById('source-search').dispatchEvent(new dom.window.Event('input'));assert.match(d.getElementById('source-count').textContent,/0 of 17/);dom.window.close();});
+
+test('every page has the shared menu, footer order, and scroll behavior',()=>{
+ for(const page of ['index.html','details.html','assumptions.html','sources.html']){
+  const dom=new JSDOM(fs.readFileSync(page,'utf8'),{url:'https://example.org/ThermalEfficiency/'+page,runScripts:'outside-only'}),w=dom.window,d=w.document;
+  w.eval(fs.readFileSync('navigation.js','utf8'));w.eval(fs.readFileSync('menu.js','utf8'));
+  const header=d.querySelector('.site-header'),toggle=d.querySelector('.menu-toggle'),nav=d.querySelector('#main-menu');
+  assert.ok(header.querySelector('.menu-outline'));assert.ok(nav.querySelector('[aria-current="page"]'));
+  const links=d.querySelectorAll('.footer-links a');assert.equal(links[0].textContent,'About the author');assert.equal(links[1].textContent,'Source code on GitHub');
+  toggle.click();assert.equal(toggle.getAttribute('aria-expanded'),'true');assert.equal(nav.inert,false);
+  Object.defineProperty(w,'scrollY',{value:49,writable:true});w.dispatchEvent(new w.Event('scroll'));assert.equal(header.inert,true);assert.equal(nav.inert,true);assert.equal(toggle.getAttribute('aria-expanded'),'false');
+  w.scrollY=0;w.dispatchEvent(new w.Event('pageshow'));assert.equal(header.inert,false);assert.equal(d.body.classList.contains('is-page-scrolled'),false);
+  toggle.click();toggle.dispatchEvent(new w.KeyboardEvent('keydown',{key:'Escape',bubbles:true}));assert.equal(toggle.getAttribute('aria-expanded'),'false');assert.equal(d.activeElement,toggle);
+  dom.window.close();
+ }
+});
