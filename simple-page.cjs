@@ -45,7 +45,10 @@ module.exports=function simplePage(html){
  const plot=result.querySelector('.plot');plot.append(find('chart-caption'));
  result.querySelector('.eyebrow').remove();
  const actions=d.querySelector('.actions');support.append(find('share'),find('csv'));
- actions.prepend(Object.assign(d.createElement('button'),{id:'try-example',type:'button',textContent:'Try an example'}));
+ const exampleRow=d.createElement('div');exampleRow.className='example-footer';
+ exampleRow.append(Object.assign(d.createElement('button'),{id:'try-example',type:'button',textContent:'Try an example'}));
+ d.querySelector('.repository-footer').append(exampleRow);
+ d.querySelector('.footnote').remove();
  find('reset').textContent='↻ Start over';find('reset').hidden=true;
  const details=d.createElement('a');details.id='full-details';details.href='details.html';details.dataset.scenarioLink='';details.textContent='Details and export →';details.hidden=true;actions.append(details);
  while(old.firstChild)support.append(old.firstChild);old.remove();form.append(support);
