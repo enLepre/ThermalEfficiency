@@ -29,7 +29,7 @@ jobs:
       - name: Prepare static assets
         run: |
           mkdir dist
-          cp *.html styles.css app.js model.js data.js chart.js navigation.js menu.js sources.js math-render.js favicon.svg dist/
+          cp *.html styles.css app.js model.js data.js chart.js navigation.js theme-init.js menu.js sources.js math-render.js favicon.svg dist/
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:

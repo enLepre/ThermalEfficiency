@@ -140,3 +140,6 @@ body[data-simple] .footnote{font-size:12px}
 @media(max-width:600px){body[data-simple] h1{font-size:44px}body[data-simple] .subtitle{font-size:16px}}
 
 .example-footer{text-align:center;flex-shrink:0;padding-top:24px}.example-footer button{font-size:14px;color:var(--muted)}
+
+/* Keep the document canvas opaque throughout sequential page fades. */
+html{background:var(--paper)}
