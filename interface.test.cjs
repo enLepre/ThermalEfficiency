@@ -22,10 +22,10 @@ test('simple page starts empty, reveals inputs independently, and only calculate
 });
 
 test('simple example, known activation energy, invalid states and reset work without stale output',()=>{
- const {dom,w,get,set}=setup('index.html');get('try-example').click();assert.equal(get('minutes').value,'30');assert.ok(!get('results').hidden);assert.match(get('action-status').textContent,/Illustrative/);
+ const {dom,w,get,set}=setup('index.html');get('try-example').click();assert.equal(get('minutes').value,'30');assert.ok(!get('results').hidden);assert.match(get('example-note').textContent,/Illustrative/);assert.ok(get('try-example').hidden);assert.equal(get('supporting-text').open,false);assert.equal(get('action-status').textContent,'');
  get('know-ea').click();assert.equal(get('mode').value,'known');assert.ok(!get('known-input').hidden);set('ea',5);assert.match(get('verdict-title').textContent,/outside|No finite/);
  set('volume',-1);assert.ok(!get('error').hidden);assert.ok(get('results').hidden);assert.ok(get('full-details').hidden);
- get('reset').click();assert.equal(get('stimulus').value,'');assert.equal(get('solvent').value,'');assert.equal(get('power').value,'');assert.ok(get('results').hidden);assert.ok(get('error').hidden);assert.equal(w.sessionStorage.getItem('thermal-scenario'),null);
+ get('reset').click();assert.equal(get('stimulus').value,'');assert.equal(get('solvent').value,'');assert.equal(get('power').value,'');assert.ok(get('results').hidden);assert.ok(get('error').hidden);assert.equal(w.sessionStorage.getItem('thermal-scenario'),null);assert.ok(!get('try-example').hidden);
  dom.window.close();
 });
 
@@ -36,6 +36,19 @@ test('solvent can be chosen first and the top input row stays available through 
  set('volume',100);set('stimulus','light');set('power',2);assert.ok(!get('results').hidden);
  set('temperature','');assert.ok(get('results').hidden);assert.ok(get('supporting-text').hidden);
  get('reset').click();assert.ok(!get('experiment-inputs').hidden);assert.ok(get('stimulus-inputs').hidden);assert.ok(get('solvent-inputs').hidden);assert.equal(get('temperature').value,'25');
+ dom.window.close();
+});
+
+test('explanations stay inside collapsed Model notes and example hides after any input',()=>{
+ const {dom,w,get,set}=setup('index.html');
+ assert.ok(!get('try-example').hidden);set('temperature',26);assert.ok(get('try-example').hidden);assert.ok(get('try-example').parentElement.hidden);assert.ok(!get('reset').hidden);
+ get('reset').click();assert.ok(!get('try-example').hidden);get('try-example').click();
+ const notes=get('supporting-text');assert.equal(notes.tagName,'DETAILS');assert.equal(notes.open,false);
+ for(const id of ['chart-note','chart-caption','assumption-summary','solvent-note','warnings','example-note'])assert.ok(notes.contains(get(id)),id);
+ assert.deepEqual([...get('simple-settings').children].map(n=>n.id),['adjust-assumptions','supporting-text']);
+ assert.ok(get('chart').compareDocumentPosition(get('adjust-assumptions')) & w.Node.DOCUMENT_POSITION_FOLLOWING);
+ assert.ok(!w.document.querySelector('.actions').contains(get('example-note')));
+ notes.open=true;assert.match(get('example-note').textContent,/Illustrative/);
  dom.window.close();
 });
 

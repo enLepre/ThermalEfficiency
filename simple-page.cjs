@@ -36,13 +36,15 @@ module.exports=function simplePage(html){
  form.insertBefore(find('error'),slot('simple-settings'));
  form.insertBefore(result,slot('simple-settings'));
  for(const node of [find('range-summary'),result.querySelector('.metrics'),find('breakdown'),find('plot').parentElement])support.append(node);
- const help=d.createElement('div');help.id='supporting-text';help.hidden=true;
+ const help=d.createElement('details');help.id='supporting-text';help.hidden=true;help.innerHTML='<summary>Model notes</summary>';
+ help.append(find('chart-note'),find('chart-caption'),find('assumption-summary'));
  const introText=d.querySelector('.subtitle');introText.textContent='Compare the energy used by a stimulus with the heating needed for the same rate enhancement.';
  const basis=d.createElement('p');basis.className='caption';basis.textContent='Compare rates at the same bulk temperature, composition and catalyst loading.';help.append(basis);
  help.append(find('solvent-note'));
  form.querySelectorAll('[data-method] .caption').forEach(node=>{node.dataset.helpMethod=node.closest('[data-method]').dataset.method;help.append(node);});
- const notes=d.createElement('details');notes.innerHTML='<summary>Model notes</summary>';notes.append(find('warnings'));help.append(notes);slot('simple-settings').append(help);
- const plot=result.querySelector('.plot');plot.append(find('chart-caption'));
+ help.append(find('warnings'));
+ const exampleNote=d.createElement('p');exampleNote.id='example-note';exampleNote.className='caption';help.append(exampleNote);
+ slot('simple-settings').append(help);
  result.querySelector('.eyebrow').remove();
  const actions=d.querySelector('.actions');support.append(find('share'),find('csv'));
  const exampleRow=d.createElement('div');exampleRow.className='example-footer shell';
