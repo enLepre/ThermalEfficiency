@@ -22,7 +22,7 @@ test('simple page starts empty, reveals inputs independently, and only calculate
 });
 
 test('simple example, known activation energy, invalid states and reset work without stale output',()=>{
- const {dom,w,get,set}=setup('index.html');get('try-example').click();assert.ok(!get('results').hidden);assert.match(get('action-status').textContent,/Illustrative/);
+ const {dom,w,get,set}=setup('index.html');get('try-example').click();assert.equal(get('minutes').value,'30');assert.ok(!get('results').hidden);assert.match(get('action-status').textContent,/Illustrative/);
  get('know-ea').click();assert.equal(get('mode').value,'known');assert.ok(!get('known-input').hidden);set('ea',5);assert.match(get('verdict-title').textContent,/outside|No finite/);
  set('volume',-1);assert.ok(!get('error').hidden);assert.ok(get('results').hidden);assert.ok(get('full-details').hidden);
  get('reset').click();assert.equal(get('stimulus').value,'');assert.equal(get('solvent').value,'');assert.equal(get('power').value,'');assert.ok(get('results').hidden);assert.ok(get('error').hidden);assert.equal(w.sessionStorage.getItem('thermal-scenario'),null);

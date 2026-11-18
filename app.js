@@ -124,7 +124,7 @@
  });
  $('plot').addEventListener('change',update);$('eaMax').addEventListener('input',update);
  $('reset').addEventListener('click',()=>{try{history.replaceState(null,'',location.pathname+location.search);}catch{}if(simple)clearSimple();else apply(defaults);$('action-status').textContent=simple?'':'Illustrative example restored.';update();});
- if(simple)$('try-example').addEventListener('click',()=>{apply(defaults);$('action-status').textContent='Illustrative example — not measured experimental results.';update();});
+ if(simple)$('try-example').addEventListener('click',()=>{apply({...defaults,minutes:30});$('action-status').textContent='Illustrative example — not measured experimental results.';update();});
  $('share').addEventListener('click',async()=>{const hash='#'+encodeURIComponent(JSON.stringify({version:1,inputs:read()}));const url=location.href.split('#')[0]+hash;try{await navigator.clipboard.writeText(url);$('action-status').textContent='Scenario link copied.';$('share-fallback').hidden=true;}catch{$('share-fallback').textContent=url;$('share-fallback').hidden=false;$('action-status').textContent='Copy the scenario link below.';}});
  $('csv').addEventListener('click',()=>{
   if(!current||!result)return;
