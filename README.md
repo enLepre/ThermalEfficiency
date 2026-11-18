@@ -42,9 +42,9 @@ This is a screening model for a batch liquid. It does not establish equal yield,
 
 ## Run and edit
 
-Open `index.html` directly or serve the directory with `node preview.cjs` (http://127.0.0.1:4173). The calculator has no runtime package dependencies or build requirement. Google Fonts is optional; Georgia is the offline fallback. No experimental inputs are uploaded. Links carry inputs in the URL fragment; session storage preserves the current scenario within the browser tab.
+Open `index.html` directly or serve the directory with `node preview.cjs` (http://127.0.0.1:4173). The calculator has no runtime package dependencies or build requirement. Google Fonts is optional; Georgia is the offline fallback. No experimental inputs are uploaded. Links carry inputs in the URL fragment; session storage preserves the current scenario for Details within the browser tab. A fresh main-page visit starts empty; a scenario URL restores its inputs.
 
-Generated HTML is checked in. To edit shared page structure, change `build-pages.cjs`, then run `node build-pages.cjs`. Calculation logic is in `model.js`, interface state in `app.js`, charts in `chart.js`, and styling in `styles.css`.
+Generated HTML is checked in. Install authoring dependencies with `pnpm install --frozen-lockfile`, edit `build-pages.cjs` (shared structure) or `simple-page.cjs` (the simplified main view), then run `node build-pages.cjs`. Calculation logic is in `model.js`, interface state in `app.js`, charts in `chart.js`, and styling in `styles.css`.
 
 ## Verification
 
@@ -54,8 +54,14 @@ Install test dependencies with `pnpm install --frozen-lockfile`, then run:
 node --test model.test.cjs site.test.cjs interface.test.cjs
 ```
 
-24 automated checks cover an independent worked example; threshold inversion and direction; equipment losses; units and stimulus methods; invalid values and physical bounds; all solvent presets; page assets; populated Compare/Details states; selector interactions; scenario restoration; CSV download dispatch; source filtering; and theme/reset behaviour. Interface tests use jsdom and do not substitute for visual browser testing. Local browser preview was blocked by the authoring environment's origin policy; physical mobile layout, real clipboard/download behaviour and visual rendering have not been verified.
+29 automated checks cover an independent worked example; threshold inversion and direction; equipment losses; units and stimulus methods; invalid values and physical bounds; all solvent presets; page assets; empty and progressively revealed main-page states; opt-in examples; full Details states; custom-liquid input gating; selector interactions; scenario restoration; CSV download dispatch; source filtering; and theme/reset behaviour. Interface tests use jsdom and do not substitute for visual browser testing. Local browser preview was blocked by the authoring environment's origin policy; physical mobile layout, real clipboard/download behaviour and visual rendering have not been verified.
 
 ## Publishing
 
 The GitHub Actions workflow tests the site and deploys only HTML/CSS/JavaScript/image assets to GitHub Pages. Set Pages to **GitHub Actions**. Every push to `main` runs the tests before publishing. All asset references are relative to support the project subpath.
+
+## Main-page flow
+
+The main page starts with empty Stimulus and Solvent choices. Each choice reveals its own inputs; selecting both reveals rate enhancement, duration, a visible assumptions summary, and optional known activation energy. Results stay hidden until the required measurements are complete. Adjust assumptions contains temperature, energy accounting, duty cycle, vessel capacity, solvent properties and equipment settings. Custom liquids require explicit properties and bounds.
+
+The main view shows one verdict and the activation-energy graph. Secondary metrics, the full breakdown, the time plot, sharing and CSV export remain on Details. The Details link carries the complete scenario. Try an example is explicit; Start over clears the comparison, URL scenario and stored scenario. The calculation model is shared between both views.

@@ -2,21 +2,51 @@
  'use strict';
  const $=id=>document.getElementById(id),D=ThermalData,M=ThermalModel,defaults=D.defaults;
  let current=null,result=null;
+ const simple=document.body.dataset.simple==='true';
+ let restored=false;
  const fmt=(n,d=2)=>Number.isFinite(n)?n.toLocaleString('en-US',{maximumFractionDigits:d,minimumFractionDigits:0}):'—';
  const energy=n=>`${fmt(n/1000,3)} kJ`;
  const methods={light:[['direct','Direct power'],['delivered','Optical power at sample'],['irradiance','Irradiance × illuminated area']],electricity:[['direct','Direct power'],['electrical','Full cell voltage × current']],mechanical:[['direct','Direct power'],['delivered','Delivered mechanical power'],['cycles','Net work per cycle × frequency'],['rotation','Torque × rotation speed']],ultrasound:[['direct','Direct power'],['delivered','Calibrated acoustic power']],custom:[['direct','Direct power'],['delivered','Delivered power']]};
  for(const s of D.solvents)$('solvent').add(new Option(s.name,s.id));$('solvent').add(new Option('Custom liquid / mixture','custom'));
  function setMethods(preferred){const stimulus=$('stimulus').value,accounting=$('accounting').value;const opts=methods[stimulus]||methods.custom;$('method').replaceChildren();for(const[v,text]of opts)$('method').add(new Option(v==='direct'?(accounting==='equipment'?'Measured electrical input power':'Measured delivered power'):text,v));$('method').value=opts.some(x=>x[0]===preferred)?preferred:'direct';}
- function apply(s){for(const[key,value]of Object.entries(defaults))if($(key)&&key!=='method')$(key).value=s[key]??value;setMethods(s.method);}
+ function apply(s){for(const[key,value]of Object.entries(defaults))if($(key)&&key!=='method')$(key).value=s[key]??value;setMethods(s.method);if(simple){$('know-ea').checked=s.mode==='known';$('plot').value='activation';}}
  function load(){
-  let data=null;try{if(location.hash){if(location.hash.length>12000)throw Error('long');data=JSON.parse(decodeURIComponent(location.hash.slice(1)));}else data=JSON.parse(sessionStorage.getItem('thermal-scenario')||'null');}catch{ $('action-status').textContent='Could not read saved scenario; showing the example.';}
+  restored=false;
+  let data=null;try{if(location.hash){if(location.hash.length>12000)throw Error('long');data=JSON.parse(decodeURIComponent(location.hash.slice(1)));}else if(!simple)data=JSON.parse(sessionStorage.getItem('thermal-scenario')||'null');}catch{ $('action-status').textContent=simple?'Could not read scenario; start a new comparison.':'Could not read saved scenario; showing the example.';}
   if(!data)return {...defaults};
-  if(data.version!==1||!data.inputs||Object.keys(defaults).some(k=>typeof data.inputs[k]!==typeof defaults[k])){$('action-status').textContent='Unsupported or incomplete scenario; showing the example.';return {...defaults};}
+  if(data.version!==1||!data.inputs||Object.keys(defaults).some(k=>typeof data.inputs[k]!==typeof defaults[k])){$('action-status').textContent=simple?'Unsupported or incomplete scenario; start a new comparison.':'Unsupported or incomplete scenario; showing the example.';return {...defaults};}
   const s={...defaults};for(const k of Object.keys(defaults))s[k]=data.inputs[k];
   if(!methods[s.stimulus]||!methods[s.stimulus].some(x=>x[0]===s.method)||!['ideal','equipment'].includes(s.accounting)||!['known','threshold'].includes(s.mode)||!['activation','time'].includes(s.plot)||!(s.solvent==='custom'||D.solvents.some(x=>x.id===s.solvent)))return {...defaults};
-  return s;
+  restored=true;return s;
  }
- function read(){const s={};for(const[k,v]of Object.entries(defaults)){const element=$(k);s[k]=typeof v==='number'?(element.value.trim()===''?NaN:Number(element.value)):element.value;}return s;}
+ function clearSimple(){
+  apply(defaults);$('stimulus').value='';$('solvent').value='';
+  for(const id of ['power','irradiance','area','voltage','current','work','frequency','torque','rpm','volume','factor','minutes','ea'])$(id).value='';
+  $('adjust-assumptions').open=false;$('solvent-properties').open=false;
+  try{sessionStorage.removeItem('thermal-scenario');}catch{}
+ }
+ function simpleReady(){
+  const both=Boolean($('stimulus').value&&$('solvent').value);
+  $('stimulus-inputs').hidden=!$('stimulus').value;$('solvent-inputs').hidden=!$('solvent').value;
+  $('experiment-inputs').hidden=$('simple-settings').hidden=!both;
+  $('reset').hidden=!($('stimulus').value||$('solvent').value);
+  const equipment=$('accounting').value==='equipment';
+  $('assumption-summary').textContent=`${equipment?'Equipment energy comparison':'Ideal delivered-energy comparison'} · ${$('temperature').value||'—'} °C · ${equipment?'conversion efficiencies and heat losses included':'no heat losses'} · ${$('vessel').value==='0'?'liquid only':'vessel heat capacity included'} · duty ${$('duty').value||'—'}%`;
+  const powerFields={direct:['power'],delivered:['power'],irradiance:['irradiance','area'],electrical:['voltage','current'],cycles:['work','frequency'],rotation:['torque','rpm']};
+  const required=[...(powerFields[$('method').value]||[]),'volume','factor','minutes',...($('mode').value==='known'?['ea']:[]),...($('solvent').value==='custom'?['density','cp','minimum','limit']:[])];
+  return both&&required.every(id=>$(id).value.trim()!=='');
+ }
+ function clearScenarioLinks(){
+  document.querySelectorAll('[data-scenario-link]').forEach(a=>a.href=a.getAttribute('href').split('#')[0]);
+  try{sessionStorage.removeItem('thermal-scenario');}catch{}
+ }
+ function read(){const s={};for(const[k,v]of Object.entries(defaults)){const element=$(k);s[k]=typeof v==='number'?(element.value.trim()===''?NaN:Number(element.value)):element.value;}
+  if(simple){
+   const active={direct:['power'],delivered:['power'],irradiance:['irradiance','area'],electrical:['voltage','current'],cycles:['work','frequency'],rotation:['torque','rpm']}[s.method]||[];
+   for(const key of ['power','irradiance','area','voltage','current','work','frequency','torque','rpm'])if(!active.includes(key)&&!Number.isFinite(s[key]))s[key]=defaults[key];
+   if(s.mode==='threshold'&&!Number.isFinite(s.ea))s.ea=defaults.ea;
+  }
+  return s;}
  function displayFields(){
   const equipment=$('accounting').value==='equipment',method=$('method').value;
   document.querySelectorAll('[data-method]').forEach(e=>e.hidden=!e.dataset.method.split(' ').includes(method));
@@ -32,12 +62,14 @@
  function persist(s){if(Object.values(s).some(v=>typeof v==='number'&&!Number.isFinite(v)))return;const payload=JSON.stringify({version:1,inputs:s});try{sessionStorage.setItem('thermal-scenario',payload);}catch{}const hash='#'+encodeURIComponent(payload);document.querySelectorAll('[data-scenario-link]').forEach(a=>a.href=a.getAttribute('href').split('#')[0]+hash);}
  function update(){
   displayFields();const entered=read();propertyNote(entered);$('error').hidden=true;current=null;result=null;
+  if(simple){$('full-details').hidden=true;if(!simpleReady()){$('results').hidden=true;$('csv').disabled=$('share').disabled=true;clearScenarioLinks();return;}}
   try{
    if(!Number.isFinite(entered.eaMax)||entered.eaMax<=0||entered.eaMax>100000)throw Error('Choose a plot maximum above zero and at most 100,000 kJ/mol.');
    const preset=D.solvents.find(x=>x.id===entered.solvent);
    const s={...entered};if(preset){s.limit=Math.min(s.limit,preset.boiling-.01);s.minimum=Math.max(s.minimum,preset.melting+.01);}
    const r=M.calculate(s);current=s;result=r;persist(entered);
    $('results').hidden=false;$('csv').disabled=$('share').disabled=false;
+   if(simple)$('full-details').hidden=false;
    $('stim-energy').textContent=energy(r.stimulus);$('stim-power').textContent=`${fmt(r.power+r.aux,3)} W average${r.startup?' + '+energy(r.startup)+' startup':''}`;
    $('stim-output-label').textContent=s.accounting==='ideal'?'Delivered stimulus energy':'Stimulated route electrical energy';
    const threshold=s.mode==='threshold';
@@ -78,17 +110,20 @@
    if(r.thermal!==null)rows.push(['Thermal sensible heating',energy(r.heat)],['Thermal warm-up loss',energy(r.rampLoss)],['Thermal holding energy',energy(r.hold)],['Total thermal energy',energy(r.thermal)],['Thermal holding power',`${fmt(r.hold/r.t,4)} W`],['Average warm-up input power',r.ramp>0?`${fmt((r.heat+r.rampLoss)/r.ramp,4)} W`:'Not specified']);
    $('breakdown-body').replaceChildren();for(const[a,b]of rows){const tr=document.createElement('tr');for(const txt of[a,b]){const td=document.createElement('td');td.textContent=txt;tr.append(td);}$('breakdown-body').append(tr);}
    ThermalChart.draw(s,r);
-  }catch(e){$('error').textContent=e.message;$('error').hidden=false;$('results').hidden=true;$('stim-energy').textContent=$('thermal-headline').textContent='—';$('stim-power').textContent=$('thermal-subline').textContent='';$('csv').disabled=$('share').disabled=true;}
+  }catch(e){$('error').textContent=e.message;$('error').hidden=false;$('results').hidden=true;$('stim-energy').textContent=$('thermal-headline').textContent='—';$('stim-power').textContent=$('thermal-subline').textContent='';$('csv').disabled=$('share').disabled=true;if(simple){$('full-details').hidden=true;clearScenarioLinks();}}
  }
  $('calculator').addEventListener('submit',e=>e.preventDefault());
  $('calculator').addEventListener('input',e=>{if(e.target.tagName!=='SELECT')update();});
  $('calculator').addEventListener('change',e=>{
+  if(simple&&e.target.id==='know-ea')$('mode').value=$('know-ea').checked?'known':'threshold';
   if(e.target.id==='stimulus'||e.target.id==='accounting')setMethods($('method').value);
   if(e.target.id==='solvent'){const s=D.solvents.find(x=>x.id===$('solvent').value);if(s){$('density').value=s.density;$('cp').value=s.cp;$('limit').value=s.boiling-1;$('minimum').value=s.melting+1;}}
+  if(simple&&e.target.id==='solvent'&&$('solvent').value==='custom'){for(const id of ['density','cp','minimum','limit'])$(id).value='';$('adjust-assumptions').open=$('solvent-properties').open=true;}
   update();
  });
  $('plot').addEventListener('change',update);$('eaMax').addEventListener('input',update);
- $('reset').addEventListener('click',()=>{try{history.replaceState(null,'',location.pathname+location.search);}catch{}apply(defaults);$('action-status').textContent='Illustrative example restored.';update();});
+ $('reset').addEventListener('click',()=>{try{history.replaceState(null,'',location.pathname+location.search);}catch{}if(simple)clearSimple();else apply(defaults);$('action-status').textContent=simple?'':'Illustrative example restored.';update();});
+ if(simple)$('try-example').addEventListener('click',()=>{apply(defaults);$('action-status').textContent='Illustrative example — not measured experimental results.';update();});
  $('share').addEventListener('click',async()=>{const hash='#'+encodeURIComponent(JSON.stringify({version:1,inputs:read()}));const url=location.href.split('#')[0]+hash;try{await navigator.clipboard.writeText(url);$('action-status').textContent='Scenario link copied.';$('share-fallback').hidden=true;}catch{$('share-fallback').textContent=url;$('share-fallback').hidden=false;$('action-status').textContent='Copy the scenario link below.';}});
  $('csv').addEventListener('click',()=>{
   if(!current||!result)return;
@@ -99,5 +134,6 @@
   rows.push(['assumption','ambient_equals_reference','true',''],['assumption','constant_properties','true',''],['assumption','temperature_limit','liquid phase and user limit; no pressure model',''],['note','warnings',$('warnings').textContent,'']);
   const text=rows.map(row=>row.map(x=>'"'+String(x).replaceAll('"','""')+'"').join(',')).join('\r\n');const url=URL.createObjectURL(new Blob(['\uFEFF'+text],{type:'text/csv;charset=utf-8'}));const a=document.createElement('a');a.href=url;a.download='thermal-efficiency.csv';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);$('action-status').textContent='Calculation CSV downloaded.';
  });
- apply(load());update();window.addEventListener('hashchange',()=>{apply(load());update();});
+ function initialize(){apply(load());if(simple&&!restored)clearSimple();update();}
+ initialize();window.addEventListener('hashchange',initialize);
 })();

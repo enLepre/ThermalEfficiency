@@ -1,12 +1,51 @@
 const {test}=require('node:test');const assert=require('node:assert/strict');const fs=require('node:fs');const {JSDOM}=require('jsdom');
-function setup(page='index.html',hash=''){
+function setup(page='details.html',hash=''){
  const dom=new JSDOM(fs.readFileSync(page,'utf8'),{url:'https://example.org/ThermalEfficiency/'+page+hash,runScripts:'outside-only'}),w=dom.window;
  w.URL.createObjectURL=()=> 'blob:test';w.URL.revokeObjectURL=()=>{};w.HTMLAnchorElement.prototype.click=function(){w.downloaded=this.download;};
  for(const file of ['navigation.js','model.js','data.js','chart.js','app.js'])w.eval(fs.readFileSync(file,'utf8'));
  const get=id=>w.document.getElementById(id),set=(id,value)=>{get(id).value=String(value);get(id).dispatchEvent(new w.Event(get(id).tagName==='SELECT'?'change':'input',{bubbles:true}));};
  return {dom,w,get,set};
 }
-test('initial calculator and direct Details load render a finite result and chart',()=>{for(const page of ['index.html','details.html']){const {dom,get}=setup(page);assert.ok(get('error').hidden);assert.match(get('thermal-headline').textContent,/kJ\/mol/);assert.match(get('stim-energy').textContent,/1.2 kJ/);assert.ok(get('chart').querySelector('.heat-line'));dom.window.close();}});
+
+test('simple page starts empty, reveals inputs independently, and only calculates complete experiments',()=>{
+ const {dom,w,get,set}=setup('index.html');
+ assert.equal(get('stimulus').value,'');assert.equal(get('solvent').value,'');assert.ok(get('results').hidden);assert.ok(get('experiment-inputs').hidden);
+ assert.ok(get('adjust-assumptions').closest('[hidden]'));assert.ok(get('share').closest('[hidden]'));assert.ok(get('csv').closest('[hidden]'));
+ set('stimulus','electricity');assert.ok(!get('stimulus-inputs').hidden);assert.ok(get('solvent-inputs').hidden);
+ set('solvent','water');assert.ok(!get('experiment-inputs').hidden);assert.ok(get('results').hidden);
+ set('power',2);set('volume',100);set('factor',5);assert.ok(get('results').hidden);set('minutes',10);
+ assert.ok(get('error').hidden,get('error').textContent);assert.ok(!get('results').hidden);assert.ok(get('chart').querySelector('.heat-line'));
+ const hash=new URL(get('full-details').href).hash;assert.ok(hash);
+ const details=setup('details.html',hash);assert.equal(details.get('power').value,'2');assert.equal(details.get('solvent').value,'water');assert.equal(details.get('minutes').value,'10');
+ set('power','');assert.ok(get('results').hidden);assert.ok(get('full-details').hidden);assert.equal(new URL(w.document.querySelector('[data-scenario-link]').href).hash,'');
+ details.dom.window.close();dom.window.close();
+});
+
+test('simple example, known activation energy, invalid states and reset work without stale output',()=>{
+ const {dom,w,get,set}=setup('index.html');get('try-example').click();assert.ok(!get('results').hidden);assert.match(get('action-status').textContent,/Illustrative/);
+ get('know-ea').click();assert.equal(get('mode').value,'known');assert.ok(!get('known-input').hidden);set('ea',5);assert.match(get('verdict-title').textContent,/outside|No finite/);
+ set('volume',-1);assert.ok(!get('error').hidden);assert.ok(get('results').hidden);assert.ok(get('full-details').hidden);
+ get('reset').click();assert.equal(get('stimulus').value,'');assert.equal(get('solvent').value,'');assert.equal(get('power').value,'');assert.ok(get('results').hidden);assert.ok(get('error').hidden);assert.equal(w.sessionStorage.getItem('thermal-scenario'),null);
+ dom.window.close();
+});
+
+test('simple power methods require their own measurements and custom liquids require properties',()=>{
+ const {dom,get,set}=setup('index.html');set('stimulus','light');set('solvent','custom');
+ assert.ok(get('adjust-assumptions').open);assert.ok(get('solvent-properties').open);assert.equal(get('cp').value,'');
+ set('volume',100);set('factor',5);set('minutes',10);set('method','irradiance');set('irradiance',100);set('area',10);assert.ok(get('results').hidden);
+ set('density',1);set('cp',4);set('minimum',0);set('limit',90);assert.ok(get('error').hidden,get('error').textContent);assert.ok(!get('results').hidden);
+ set('stimulus','mechanical');set('method','rotation');assert.ok(get('results').hidden);set('torque',.01);set('rpm',1000);assert.ok(!get('results').hidden);
+ dom.window.close();
+});
+
+test('Details scenarios retain advanced assumptions on the simple page and on return',()=>{
+ const details=setup();details.set('accounting','equipment');details.set('method','delivered');details.set('stimEfficiency',25);details.set('vessel',20);details.set('temperature',30);details.set('mode','known');details.set('ea',50);
+ const hash=new URL(details.w.document.querySelector('[data-scenario-link]').href).hash;
+ const simple=setup('index.html',hash);assert.ok(!simple.get('results').hidden);assert.ok(simple.get('know-ea').checked);assert.equal(simple.get('stimEfficiency').value,'25');assert.match(simple.get('assumption-summary').textContent,/Equipment.*30 °C.*vessel/);
+ const back=setup('details.html',new URL(simple.get('full-details').href).hash);assert.equal(back.get('vessel').value,'20');assert.equal(back.get('stimEfficiency').value,'25');assert.equal(back.get('mode').value,'known');
+ for(const instance of [details,simple,back])instance.dom.window.close();
+});
+test('initial calculator and direct Details load render a finite result and chart',()=>{for(const page of ['details.html']){const {dom,get}=setup(page);assert.ok(get('error').hidden);assert.match(get('thermal-headline').textContent,/kJ\/mol/);assert.match(get('stim-energy').textContent,/1.2 kJ/);assert.ok(get('chart').querySelector('.heat-line'));dom.window.close();}});
 test('all stimulus selectors show the right fields and recalculate',()=>{const {dom,get,set}=setup();for(const [stim,method]of [['light','irradiance'],['electricity','electrical'],['mechanical','cycles'],['mechanical','rotation'],['ultrasound','delivered'],['custom','direct']]){set('stimulus',stim);set('method',method);assert.ok(get('error').hidden,stim);assert.equal(get('method').value,method);assert.notEqual(get('stim-energy').textContent,'—');}dom.window.close();});
 test('equipment mode makes efficiency conversion visible and updates energy',()=>{const{dom,get,set}=setup();set('accounting','equipment');set('method','delivered');set('power',10);set('stimEfficiency',25);assert.equal(get('stim-energy').textContent,'24 kJ');assert.equal(get('stim-efficiency').hidden,false);set('method','direct');assert.equal(get('stim-energy').textContent,'6 kJ');assert.equal(get('stim-efficiency').hidden,true);dom.window.close();});
 test('known Ea, time graph, zero energy and invalid values work without stale results',()=>{const{dom,get,set}=setup();set('mode','known');set('ea',50);assert.ok(!get('results').hidden);set('plot','time');assert.match(get('chart').textContent,/Operating duration/);set('volume','');assert.equal(get('results').hidden,true);assert.equal(get('csv').disabled,true);set('volume',100);set('power',0);assert.equal(get('results').hidden,false);set('mode','threshold');assert.match(get('verdict-title').textContent,/No finite/);set('factor',1);assert.match(get('verdict-title').textContent,/No acceleration/);set('factor',.5);assert.equal(get('error').hidden,false);dom.window.close();});

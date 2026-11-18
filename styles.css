@@ -107,3 +107,28 @@ body.is-page-scrolled .site-header{opacity:0;visibility:hidden;pointer-events:no
 /* Match the personal website menu typography, including its title. */
 .menu nav{font-family:Georgia,"Times New Roman",serif}
 .menu nav .brand{font-size:23px;line-height:1.2;letter-spacing:-.02em;font-style:normal;white-space:nowrap}
+
+/* A quiet starting point, shared visual rhythm with Electron Cost. */
+body[data-simple]{min-height:100svh;display:flex;flex-direction:column}
+body[data-simple] > main{flex:1 0 auto}
+body[data-simple] .intro{padding:58px 0 40px}
+body[data-simple] h1{font-family:Georgia,"Times New Roman",serif;font-size:clamp(38px,5.5vw,58px);letter-spacing:-.045em}
+body[data-simple] .subtitle{font-size:19px;line-height:1.6}
+.simple-choices{display:grid;grid-template-columns:1fr 1fr;gap:40px;border-top:1px solid var(--line);padding-top:22px}
+.simple-choice > .simple-field > label{font-size:20px;margin:0 0 12px}
+.simple-choice > .simple-field > select{border:0;border-bottom:1px solid var(--control);padding:12px 0;background:var(--paper)}
+.simple-choice #stimulus-inputs,.simple-choice #solvent-inputs{padding-top:12px}
+body[data-simple] #experiment-inputs{border-top:1px solid var(--line);margin-top:28px;padding-top:8px}
+body[data-simple] #assumption-summary{margin:22px 0 4px}
+body[data-simple] #adjust-assumptions{margin:0 0 20px}
+body[data-simple] #adjust-assumptions > summary{color:var(--muted)}
+.known-toggle{display:flex;align-items:center;gap:10px;font-size:15px;margin:20px 0}
+.known-toggle input{width:16px;height:16px;min-height:0;margin:0;accent-color:var(--stim)}
+body[data-simple] #known-input{max-width:320px}
+body[data-simple] .verdict{border-top:1px solid var(--line);padding-top:28px;margin:30px 0 18px}
+body[data-simple] .verdict h2{font-size:clamp(25px,4vw,32px)}
+body[data-simple] .plot{margin:28px 0 18px}
+body[data-simple] .plot h2{font-size:22px}
+body[data-simple] .actions{font-size:14px;margin:28px 0}
+body[data-simple] .footnote{font-size:12px}
+@media(max-width:600px){.simple-choices{grid-template-columns:1fr;gap:24px}body[data-simple] .intro{padding:30px 0}body[data-simple] #experiment-fields{grid-template-columns:1fr 1fr}}
