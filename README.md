@@ -54,7 +54,7 @@ Install test dependencies with `pnpm install --frozen-lockfile`, then run:
 node --test model.test.cjs site.test.cjs interface.test.cjs
 ```
 
-29 automated checks cover an independent worked example; threshold inversion and direction; equipment losses; units and stimulus methods; invalid values and physical bounds; all solvent presets; page assets; empty and progressively revealed main-page states; opt-in examples; full Details states; custom-liquid input gating; selector interactions; scenario restoration; CSV download dispatch; source filtering; and theme/reset behaviour. Interface tests use jsdom and do not substitute for visual browser testing. Local browser preview was blocked by the authoring environment's origin policy; physical mobile layout, real clipboard/download behaviour and visual rendering have not been verified.
+30 automated checks cover an independent worked example; threshold inversion and direction; equipment losses; units and stimulus methods; invalid values and physical bounds; all solvent presets; page assets; empty and progressively revealed main-page states; opt-in examples; full Details states; custom-liquid input gating; selector interactions; scenario restoration; CSV download dispatch; source filtering; and theme/reset behaviour. Interface tests use jsdom and do not substitute for visual browser testing. Local browser preview was blocked by the authoring environment's origin policy; physical mobile layout, real clipboard/download behaviour and visual rendering have not been verified.
 
 ## Publishing
 
@@ -62,6 +62,6 @@ The GitHub Actions workflow tests the site and deploys only HTML/CSS/JavaScript/
 
 ## Main-page flow
 
-The main page starts with empty Stimulus and Solvent choices. Each choice reveals its own inputs; selecting both reveals rate enhancement, duration, a visible assumptions summary, and optional known activation energy. Results stay hidden until the required measurements are complete. Adjust assumptions contains temperature, energy accounting, duty cycle, vessel capacity, solvent properties and equipment settings. Custom liquids require explicit properties and bounds.
+The main page starts with empty Stimulus and Solvent choices. Rate enhancement, duration and temperature share a row above the choices. Each choice independently reveals its own inputs, with optional known activation energy under the solvent. Supporting text and assumptions follow the result and graph. Results stay hidden until the required measurements are complete. Adjust assumptions contains energy accounting, duty cycle, vessel capacity, solvent properties and equipment settings. Custom liquids require explicit properties and bounds.
 
 The main view shows one verdict and the activation-energy graph. Secondary metrics, the full breakdown, the time plot, sharing and CSV export remain on Details. The Details link carries the complete scenario. Try an example is explicit; Start over clears the comparison, URL scenario and stored scenario. The calculation model is shared between both views.

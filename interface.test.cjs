@@ -9,12 +9,12 @@ function setup(page='details.html',hash=''){
 
 test('simple page starts empty, reveals inputs independently, and only calculates complete experiments',()=>{
  const {dom,w,get,set}=setup('index.html');
- assert.equal(get('stimulus').value,'');assert.equal(get('solvent').value,'');assert.ok(get('results').hidden);assert.ok(get('experiment-inputs').hidden);
- assert.ok(get('adjust-assumptions').closest('[hidden]'));assert.ok(get('share').closest('[hidden]'));assert.ok(get('csv').closest('[hidden]'));
- set('stimulus','electricity');assert.ok(!get('stimulus-inputs').hidden);assert.ok(get('solvent-inputs').hidden);
+ assert.equal(get('stimulus').value,'');assert.equal(get('solvent').value,'');assert.ok(get('results').hidden);assert.ok(!get('experiment-inputs').hidden);
+ assert.ok(get('adjust-assumptions').closest('[hidden]'));assert.deepEqual([...get('experiment-fields').querySelectorAll('input')].map(x=>x.id),['factor','minutes','temperature']);assert.ok(get('share').closest('[hidden]'));assert.ok(get('csv').closest('[hidden]'));
+ set('stimulus','electricity');assert.ok(!get('stimulus-inputs').hidden);assert.ok(get('solvent-inputs').hidden);assert.ok(get('supporting-text').hidden);
  set('solvent','water');assert.ok(!get('experiment-inputs').hidden);assert.ok(get('results').hidden);
  set('power',2);set('volume',100);set('factor',5);assert.ok(get('results').hidden);set('minutes',10);
- assert.ok(get('error').hidden,get('error').textContent);assert.ok(!get('results').hidden);assert.ok(get('chart').querySelector('.heat-line'));
+ assert.ok(get('error').hidden,get('error').textContent);assert.ok(!get('results').hidden);assert.ok(get('chart').querySelector('.heat-line'));assert.ok(!get('supporting-text').hidden);assert.ok(get('chart').compareDocumentPosition(get('supporting-text')) & w.Node.DOCUMENT_POSITION_FOLLOWING);
  const hash=new URL(get('full-details').href).hash;assert.ok(hash);
  const details=setup('details.html',hash);assert.equal(details.get('power').value,'2');assert.equal(details.get('solvent').value,'water');assert.equal(details.get('minutes').value,'10');
  set('power','');assert.ok(get('results').hidden);assert.ok(get('full-details').hidden);assert.equal(new URL(w.document.querySelector('[data-scenario-link]').href).hash,'');
@@ -26,6 +26,16 @@ test('simple example, known activation energy, invalid states and reset work wit
  get('know-ea').click();assert.equal(get('mode').value,'known');assert.ok(!get('known-input').hidden);set('ea',5);assert.match(get('verdict-title').textContent,/outside|No finite/);
  set('volume',-1);assert.ok(!get('error').hidden);assert.ok(get('results').hidden);assert.ok(get('full-details').hidden);
  get('reset').click();assert.equal(get('stimulus').value,'');assert.equal(get('solvent').value,'');assert.equal(get('power').value,'');assert.ok(get('results').hidden);assert.ok(get('error').hidden);assert.equal(w.sessionStorage.getItem('thermal-scenario'),null);
+ dom.window.close();
+});
+
+test('solvent can be chosen first and the top input row stays available through reset',()=>{
+ const {dom,get,set}=setup('index.html');
+ set('factor',4);set('minutes',12);set('temperature',30);set('solvent','ethanol');
+ assert.equal(get('stimulus').value,'');assert.ok(get('stimulus-inputs').hidden);assert.ok(!get('solvent-inputs').hidden);assert.ok(!get('experiment-inputs').hidden);assert.ok(get('results').hidden);
+ set('volume',100);set('stimulus','light');set('power',2);assert.ok(!get('results').hidden);
+ set('temperature','');assert.ok(get('results').hidden);assert.ok(get('supporting-text').hidden);
+ get('reset').click();assert.ok(!get('experiment-inputs').hidden);assert.ok(get('stimulus-inputs').hidden);assert.ok(get('solvent-inputs').hidden);assert.equal(get('temperature').value,'25');
  dom.window.close();
 });
 

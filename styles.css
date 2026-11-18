@@ -118,7 +118,10 @@ body[data-simple] .subtitle{font-size:19px;line-height:1.6}
 .simple-choice > .simple-field > label{font-size:20px;margin:0 0 12px}
 .simple-choice > .simple-field > select{border:0;border-bottom:1px solid var(--control);padding:12px 0;background:var(--paper)}
 .simple-choice #stimulus-inputs,.simple-choice #solvent-inputs{padding-top:12px}
-body[data-simple] #experiment-inputs{border-top:1px solid var(--line);margin-top:28px;padding-top:8px}
+body[data-simple] #experiment-inputs{margin:0 0 28px}
+body[data-simple] #experiment-fields{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px}
+body[data-simple] #experiment-fields label{margin-top:0}
+body[data-simple] #experiment-fields input{min-width:0}
 body[data-simple] #assumption-summary{margin:22px 0 4px}
 body[data-simple] #adjust-assumptions{margin:0 0 20px}
 body[data-simple] #adjust-assumptions > summary{color:var(--muted)}
@@ -131,4 +134,4 @@ body[data-simple] .plot{margin:28px 0 18px}
 body[data-simple] .plot h2{font-size:22px}
 body[data-simple] .actions{font-size:14px;margin:28px 0}
 body[data-simple] .footnote{font-size:12px}
-@media(max-width:600px){.simple-choices{grid-template-columns:1fr;gap:24px}body[data-simple] .intro{padding:30px 0}body[data-simple] #experiment-fields{grid-template-columns:1fr 1fr}}
+@media(max-width:600px){.simple-choices{grid-template-columns:1fr;gap:24px}body[data-simple] .intro{padding:30px 0}body[data-simple] #experiment-fields{gap:10px}body[data-simple] #experiment-fields label{font-size:12px}}
