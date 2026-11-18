@@ -37,7 +37,7 @@ module.exports=function simplePage(html){
  form.insertBefore(result,slot('simple-settings'));
  for(const node of [find('range-summary'),result.querySelector('.metrics'),find('breakdown'),find('plot').parentElement])support.append(node);
  const help=d.createElement('div');help.id='supporting-text';help.hidden=true;
- const introText=d.querySelector('.subtitle');introText.textContent='Compare the energy used by a stimulus with the heating needed for the same rate enhancement.';help.append(introText);
+ const introText=d.querySelector('.subtitle');introText.textContent='Compare the energy used by a stimulus with the heating needed for the same rate enhancement.';
  const basis=d.createElement('p');basis.className='caption';basis.textContent='Compare rates at the same bulk temperature, composition and catalyst loading.';help.append(basis);
  help.append(find('solvent-note'));
  form.querySelectorAll('[data-method] .caption').forEach(node=>{node.dataset.helpMethod=node.closest('[data-method]').dataset.method;help.append(node);});

@@ -111,9 +111,9 @@ body.is-page-scrolled .site-header{opacity:0;visibility:hidden;pointer-events:no
 /* A quiet starting point, shared visual rhythm with Electron Cost. */
 body[data-simple]{min-height:100svh;display:flex;flex-direction:column}
 body[data-simple] > main{flex:1 0 auto}
-body[data-simple] .intro{padding:58px 0 40px}
-body[data-simple] h1{font-family:Georgia,"Times New Roman",serif;font-size:clamp(38px,5.5vw,58px);letter-spacing:-.045em}
-body[data-simple] .subtitle{font-size:19px;line-height:1.6}
+body[data-simple] .intro{padding:48px 0 28px;text-align:center}
+body[data-simple] h1{font-family:'Source Serif 4',Georgia,serif;font-size:clamp(48px,7vw,82px);line-height:1.08;margin:0;letter-spacing:-.02em;font-weight:400}
+body[data-simple] .subtitle{max-width:650px;margin:18px auto 0;font-size:18px;line-height:1.5;color:var(--muted)}
 .simple-choices{display:grid;grid-template-columns:1fr 1fr;gap:40px;border-top:1px solid var(--line);padding-top:22px}
 .simple-choice > .simple-field > label{font-size:20px;margin:0 0 12px}
 .simple-choice > .simple-field > select{border:0;border-bottom:1px solid var(--control);padding:12px 0;background:var(--paper)}
@@ -134,4 +134,7 @@ body[data-simple] .plot{margin:28px 0 18px}
 body[data-simple] .plot h2{font-size:22px}
 body[data-simple] .actions{font-size:14px;margin:28px 0}
 body[data-simple] .footnote{font-size:12px}
-@media(max-width:600px){.simple-choices{grid-template-columns:1fr;gap:24px}body[data-simple] .intro{padding:30px 0}body[data-simple] #experiment-fields{gap:10px}body[data-simple] #experiment-fields label{font-size:12px}}
+@media(max-width:600px){.simple-choices{grid-template-columns:1fr;gap:24px}body[data-simple] .intro{padding:32px 0 22px}body[data-simple] #experiment-fields{gap:10px}body[data-simple] #experiment-fields label{font-size:12px}}
+
+@media(max-width:680px){body[data-simple] h1{font-size:clamp(44px,9vw,60px)}}
+@media(max-width:600px){body[data-simple] h1{font-size:44px}body[data-simple] .subtitle{font-size:16px}}
