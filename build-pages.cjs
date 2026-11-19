@@ -13,7 +13,7 @@ function calculator(details=false) { return `<form id="calculator" novalidate>
 <div class="shared">${[field('temperature','Reference temperature (°C)',25,-273.14),field('factor','Observed rate enhancement (r/r₀)',5,1),field('minutes','Operating duration (min)',10,.000001)].map(x=>`<div>${x}</div>`).join('')}</div>
 <p class="caption">Use stimulated / unstimulated rates at the same bulk temperature, composition and catalyst loading. Example inputs are illustrative, not measured experimental results.</p>
 <div class="columns"><section class="stimulus-panel" aria-labelledby="stimulus-heading"><p class="eyebrow">01 / STIMULATION</p><h2 id="stimulus-heading">Energy for the stimulus</h2>
-${select('stimulus','Stimulus',[['light','Light'],['electricity','Electricity'],['mechanical','Mechanical stress'],['ultrasound','Ultrasound'],['custom','Other / custom']])}
+${select('stimulus','Stimulus',[['electricity','Electricity'],['light','Light'],['mechanical','Mechanical stress'],['ultrasound','Ultrasound'],['custom','Other / custom']])}
 <label for="method">How is power specified?</label><select id="method" name="method"></select>
 <div data-method="direct delivered">${field('power','Power (W)',2)}</div>
 <div data-method="irradiance">${pair(field('irradiance','Irradiance at sample (mW/cm²)',100),field('area','Illuminated area (cm²)',10,.000001))}</div>
