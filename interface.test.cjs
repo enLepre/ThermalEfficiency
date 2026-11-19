@@ -59,17 +59,17 @@ test('neutral verdicts emphasize only break-even or the exceptional condition',(
  dom.window.close();
 });
 
-test('descriptive comparisons highlight both routes and preserve validity qualifications',()=>{
+test('descriptive emphasis prefers stimulation, falls back to heating, and preserves qualifications',()=>{
  const {dom,get,set}=setup('index.html');get('try-example').click();
- assert.equal(get('verdict-copy').querySelector('.stim').textContent,'stimulation uses less energy');
- assert.equal(get('verdict-copy').querySelector('.heat').textContent,'heating uses less energy');
+ assert.equal(get('verdict-copy').querySelector('strong').textContent,'stimulation uses less energy');assert.equal(get('verdict-copy').querySelectorAll('strong').length,1);assert.equal(get('verdict-copy').querySelector('.stim,.heat'),null);
+ assert.match(get('verdict-copy').textContent,/heating uses less energy/);
  assert.match(get('verdict-copy').textContent,/within the valid temperature range/);
  set('power',100);
- assert.equal(get('verdict-copy').querySelector('.heat').textContent,'Heating uses less energy');
+ assert.equal(get('verdict-copy').querySelector('strong').textContent,'Heating uses less energy');assert.equal(get('verdict-copy').querySelectorAll('strong').length,1);
  assert.match(get('verdict-copy').textContent,/wherever this thermal benchmark is valid/);
  get('know-ea').click();set('ea',50);
- assert.match(get('verdict-copy').querySelector('.stim').textContent,/kJ for stimulation/);
- assert.match(get('verdict-copy').querySelector('.heat').textContent,/kJ for heating/);
+ assert.match(get('verdict-copy').querySelector('strong').textContent,/kJ for stimulation/);assert.equal(get('verdict-copy').querySelectorAll('strong').length,1);
+ assert.match(get('verdict-copy').textContent,/kJ for heating/);
  set('ea',1);assert.equal(get('verdict-copy').querySelector('strong'),null);
  dom.window.close();
 });
