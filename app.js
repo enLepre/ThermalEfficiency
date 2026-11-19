@@ -85,13 +85,13 @@
    $('third-label').textContent=threshold?'Minimum feasible Eₐ at model limit':'Stimulated / thermal energy ratio';
    $('third-value').textContent=threshold?(r.minimumEa===null?'—':`${fmt(r.minimumEa/1000)} kJ/mol`):(r.ratio===null?'—':`${fmt(r.ratio,3)}×`);
    let title,copy;
-   if(r.status==='no-enhancement'){title='No acceleration to reproduce';copy='At a rate ratio of 1, the reference temperature already meets the target. Additional thermal energy is zero and there is no unique activation-energy threshold.';}
+   if(r.status==='no-enhancement'){title='No rate enhancement to compare';copy='At a rate ratio of 1, the reference temperature already meets the target. Additional thermal energy is zero and there is no unique activation-energy threshold.';}
    else if(threshold){
-    if(r.threshold===Infinity){title='No finite break-even activation energy';copy='The entered stimulus energy is zero. Equivalent heating requires positive energy wherever the target temperature is within the model range. Confirm that all relevant stimulus energy has been included.';}
-    else if(!r.thresholdInRange){title='The break-even temperature is outside the model range';copy=`The mathematical threshold is ${fmt(r.threshold/1000)} kJ/mol, but the equal-energy temperature exceeds ${fmt(s.limit)} °C. Heating uses less energy wherever this thermal benchmark is valid. No comparison is claimed below the minimum feasible activation energy.`;}
-    else{title=`Stimulation has an advantage below ${fmt(r.threshold/1000)} kJ/mol`;copy=`For the observed ${fmt(s.factor)}× enhancement over ${fmt(s.minutes)} min, stimulation uses less energy between the feasible lower bound and this threshold. Above it, heating uses less. The actual activation energy remains unknown.`;}
-   }else if(r.status==='unreachable'){title='No finite thermal temperature in this model';copy='The selected activation energy and rate enhancement give a nonpositive Arrhenius denominator. No thermal energy estimate or winner can be assigned.';}
-   else if(r.status==='outside-range'){title='Equivalent heating lies outside the model range';copy=`The extrapolated temperature is ${fmt(r.target)} °C, above the ${fmt(s.limit)} °C limit. Adjust the experimental basis or valid bounds before drawing a conclusion.`;}
+    if(r.threshold===Infinity){title='No finite break-even point';copy='Check the entered stimulus energy. It is currently zero. Equivalent heating requires positive energy wherever the target temperature is within the model range. Confirm that all relevant stimulus energy has been included.';}
+    else if(!r.thresholdInRange){title='Outside the model range';copy=`The mathematical threshold is ${fmt(r.threshold/1000)} kJ/mol, but the equal-energy temperature exceeds ${fmt(s.limit)} °C. Heating uses less energy wherever this thermal benchmark is valid. No comparison is claimed below the minimum feasible activation energy.`;}
+    else{title=`Stimulation has an advantage below ${fmt(r.threshold/1000)} kJ/mol`;copy=`For the observed ${fmt(s.factor)}× enhancement over ${fmt(s.minutes)} min, below this threshold, stimulation uses less energy within the valid temperature range. Above it, heating uses less energy. The actual activation energy remains unknown.`;}
+   }else if(r.status==='unreachable'){title='No valid thermal comparison';copy='The selected activation energy and rate enhancement give a nonpositive Arrhenius denominator. No thermal energy estimate or winner can be assigned.';}
+   else if(r.status==='outside-range'){title='Outside the model range';copy=`The extrapolated temperature is ${fmt(r.target)} °C, above the ${fmt(s.limit)} °C limit. Adjust the experimental basis or valid bounds before drawing a conclusion.`;}
    else if(r.status==='equal'){title='The two routes break even';copy='Stimulation and equivalent heating consume the same energy under the selected assumptions.';}
    else{const stim=r.status==='stimulation',saving=stim?100*(1-r.stimulus/r.thermal):100*(1-r.thermal/r.stimulus);title=`${stim?'Stimulation':'Heating'} uses ${fmt(saving,1)}% less energy`;copy=`${energy(r.stimulus)} for stimulation versus ${energy(r.thermal)} for heating to ${fmt(r.target)} °C. This compares the same target rate over ${fmt(s.minutes)} min, using the selected energy boundary.`;}
    const heading=$('verdict-title');heading.replaceChildren();
@@ -99,10 +99,15 @@
    if(threshold&&r.status!=='no-enhancement'&&Number.isFinite(r.threshold)&&r.thresholdInRange){
     heading.append(document.createTextNode('Stimulation has an '));
     accent.classList.add('stim');accent.textContent=`advantage below ${fmt(r.threshold/1000)} kJ/mol`;
+   }else if(!threshold&&['stimulation','thermal'].includes(r.status)){
+    const prefix=r.status==='stimulation'?'Stimulation uses ':'Heating uses ';
+    heading.append(document.createTextNode(prefix));accent.textContent=title.slice(prefix.length);
+    accent.classList.add(r.status==='stimulation'?'stim':'heat');
+   }else if(!threshold&&r.status==='equal'){
+    heading.append(document.createTextNode('The two routes '));accent.textContent='break even';
    }else{
     accent.textContent=title;
-    if(!threshold&&r.status==='stimulation')accent.classList.add('stim');
-    else if(!threshold&&r.status==='thermal')accent.classList.add('heat');
+    if(title==='Outside the model range'||title==='No valid thermal comparison')accent.classList.add('caution');
    }
    heading.append(accent);$('verdict-copy').textContent=copy;
    const ranges=$('range-summary');ranges.replaceChildren();ranges.hidden=!threshold||s.factor===1;
