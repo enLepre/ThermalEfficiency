@@ -109,7 +109,16 @@
     accent.textContent=title;
     if(title==='Outside the model range'||title==='No valid thermal comparison')accent.classList.add('caution');
    }
-   heading.append(accent);$('verdict-copy').textContent=copy;
+   heading.append(accent);
+   const description=$('verdict-copy');description.replaceChildren();
+   const comparisons=/(?:stimulation|(?:equivalent )?heating|thermal treatment) (?:uses?|requires?|consumes?) (?:[\d.,]+% )?(?:less|more) energy|[\d.,]+ kJ for (?:stimulation|heating)/gi;
+   let cursor=0;
+   for(const match of copy.matchAll(comparisons)){
+    description.append(document.createTextNode(copy.slice(cursor,match.index)));
+    const emphasis=document.createElement('strong');emphasis.className='comparison-accent '+(/stimulation/i.test(match[0])?'stim':'heat');emphasis.textContent=match[0];description.append(emphasis);
+    cursor=match.index+match[0].length;
+   }
+   description.append(document.createTextNode(copy.slice(cursor)));
    const ranges=$('range-summary');ranges.replaceChildren();ranges.hidden=!threshold||s.factor===1;
    if(!ranges.hidden){
     let labels=r.threshold===Infinity?[[`${fmt(r.minimumEa/1000)} kJ/mol and above`,'Stimulation favoured within the temperature range','stim'],['No finite crossing','Check the zero-energy stimulus assumption','heat']]:r.thresholdInRange?[[`${fmt(r.minimumEa/1000)}–${fmt(r.threshold/1000)} kJ/mol`,'Stimulation favoured; equal at the upper boundary','stim'],[`Above ${fmt(r.threshold/1000)} kJ/mol`,'Thermal treatment favoured','heat']]:[[`Below ${fmt(r.minimumEa/1000)} kJ/mol`,'Outside the valid thermal temperature range',''],[`${fmt(r.minimumEa/1000)} kJ/mol and above`,'Thermal treatment favoured','heat']];

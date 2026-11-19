@@ -59,6 +59,21 @@ test('neutral verdicts emphasize only break-even or the exceptional condition',(
  dom.window.close();
 });
 
+test('descriptive comparisons highlight both routes and preserve validity qualifications',()=>{
+ const {dom,get,set}=setup('index.html');get('try-example').click();
+ assert.equal(get('verdict-copy').querySelector('.stim').textContent,'stimulation uses less energy');
+ assert.equal(get('verdict-copy').querySelector('.heat').textContent,'heating uses less energy');
+ assert.match(get('verdict-copy').textContent,/within the valid temperature range/);
+ set('power',100);
+ assert.equal(get('verdict-copy').querySelector('.heat').textContent,'Heating uses less energy');
+ assert.match(get('verdict-copy').textContent,/wherever this thermal benchmark is valid/);
+ get('know-ea').click();set('ea',50);
+ assert.match(get('verdict-copy').querySelector('.stim').textContent,/kJ for stimulation/);
+ assert.match(get('verdict-copy').querySelector('.heat').textContent,/kJ for heating/);
+ set('ea',1);assert.equal(get('verdict-copy').querySelector('strong'),null);
+ dom.window.close();
+});
+
 test('explanations stay inside collapsed Model notes and example hides after any input',()=>{
  const {dom,w,get,set}=setup('index.html');
  assert.ok(!get('try-example').hidden);set('temperature',26);assert.ok(get('try-example').hidden);assert.ok(get('try-example').parentElement.hidden);assert.ok(!get('reset').hidden);

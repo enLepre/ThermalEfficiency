@@ -167,3 +167,4 @@ body.is-page-scrolled .repository-footer{opacity:0;visibility:hidden;pointer-eve
 .verdict-accent{font-weight:600}
 .verdict-accent.caution{color:#8b641b}
 :root[data-theme=dark] .verdict-accent.caution{color:#d9b36c}
+.comparison-accent{font-weight:600}
