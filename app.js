@@ -94,7 +94,17 @@
    else if(r.status==='outside-range'){title='Equivalent heating lies outside the model range';copy=`The extrapolated temperature is ${fmt(r.target)} °C, above the ${fmt(s.limit)} °C limit. Adjust the experimental basis or valid bounds before drawing a conclusion.`;}
    else if(r.status==='equal'){title='The two routes break even';copy='Stimulation and equivalent heating consume the same energy under the selected assumptions.';}
    else{const stim=r.status==='stimulation',saving=stim?100*(1-r.stimulus/r.thermal):100*(1-r.thermal/r.stimulus);title=`${stim?'Stimulation':'Heating'} uses ${fmt(saving,1)}% less energy`;copy=`${energy(r.stimulus)} for stimulation versus ${energy(r.thermal)} for heating to ${fmt(r.target)} °C. This compares the same target rate over ${fmt(s.minutes)} min, using the selected energy boundary.`;}
-   $('verdict-title').textContent=title;$('verdict-copy').textContent=copy;
+   const heading=$('verdict-title');heading.replaceChildren();
+   const accent=document.createElement('strong');accent.className='verdict-accent';
+   if(threshold&&r.status!=='no-enhancement'&&Number.isFinite(r.threshold)&&r.thresholdInRange){
+    heading.append(document.createTextNode('Stimulation has an '));
+    accent.classList.add('stim');accent.textContent=`advantage below ${fmt(r.threshold/1000)} kJ/mol`;
+   }else{
+    accent.textContent=title;
+    if(!threshold&&r.status==='stimulation')accent.classList.add('stim');
+    else if(!threshold&&r.status==='thermal')accent.classList.add('heat');
+   }
+   heading.append(accent);$('verdict-copy').textContent=copy;
    const ranges=$('range-summary');ranges.replaceChildren();ranges.hidden=!threshold||s.factor===1;
    if(!ranges.hidden){
     let labels=r.threshold===Infinity?[[`${fmt(r.minimumEa/1000)} kJ/mol and above`,'Stimulation favoured within the temperature range','stim'],['No finite crossing','Check the zero-energy stimulus assumption','heat']]:r.thresholdInRange?[[`${fmt(r.minimumEa/1000)}–${fmt(r.threshold/1000)} kJ/mol`,'Stimulation favoured; equal at the upper boundary','stim'],[`Above ${fmt(r.threshold/1000)} kJ/mol`,'Thermal treatment favoured','heat']]:[[`Below ${fmt(r.minimumEa/1000)} kJ/mol`,'Outside the valid thermal temperature range',''],[`${fmt(r.minimumEa/1000)} kJ/mol and above`,'Thermal treatment favoured','heat']];

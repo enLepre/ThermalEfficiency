@@ -39,6 +39,16 @@ test('solvent can be chosen first and the top input row stays available through 
  dom.window.close();
 });
 
+test('result accents follow the favoured route and clear for out-of-range comparisons',()=>{
+ const {dom,get,set}=setup('index.html');get('try-example').click();
+ assert.match(get('verdict-title').querySelector('.stim').textContent,/advantage below .*kJ\/mol/);
+ get('know-ea').click();set('ea',50);set('power',0.01);
+ assert.match(get('verdict-title').querySelector('.stim').textContent,/Stimulation uses .*less energy/);
+ set('power',100);assert.match(get('verdict-title').querySelector('.heat').textContent,/Heating uses .*less energy/);
+ set('ea',1);assert.equal(get('verdict-title').querySelector('.stim,.heat'),null);
+ dom.window.close();
+});
+
 test('explanations stay inside collapsed Model notes and example hides after any input',()=>{
  const {dom,w,get,set}=setup('index.html');
  assert.ok(!get('try-example').hidden);set('temperature',26);assert.ok(get('try-example').hidden);assert.ok(get('try-example').parentElement.hidden);assert.ok(!get('reset').hidden);
